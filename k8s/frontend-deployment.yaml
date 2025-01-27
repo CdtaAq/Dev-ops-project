@@ -16,7 +16,7 @@ spec:
         - name: frontend
           image: ctay456aa/angular-frontend
           ports:
-            - containerPort: 4200 
+            - containerPort: 4200
 ---
 apiVersion: v1
 kind: Service
@@ -27,6 +27,7 @@ spec:
     app: frontend
   ports:
     - protocol: TCP
-      port: 80  
-      targetPort: 4200  
-  type: LoadBalancer  
+      port: 80
+      targetPort: 4200
+  type: ClusterIP  # Use ClusterIP instead of LoadBalancer
+
