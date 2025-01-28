@@ -6,14 +6,33 @@ pipeline {
         BACKEND_DIR = 'spring-backend'
         FRONTEND_IMAGE = 'ctay456aa/angular-frontend:latest'
         BACKEND_IMAGE = 'ctay456aa/angular-frontend:latest'
-        DOCKER_CREDENTIALS_ID = 'docker-credentials'  
+        DOCKER_CREDENTIALS_ID = 'docker-credentials'
     }
 
     stages {
-        stage('Build Frontend Docker Image') {
+        stage('Determine Changes') {
             steps {
                 script {
-                    // Build Docker image for frontend (Angular)
+                    def changes = sh(
+                        script: 'git diff --name-only HEAD HEAD~1',
+                        returnStdout: true
+                    ).trim().split('\n')
+                    
+                    env.BUILD_FRONTEND = changes.any { it.startsWith(FRONTEND_DIR) }.toString()
+                    env.BUILD_BACKEND = changes.any { it.startsWith(BACKEND_DIR) }.toString()
+                    
+                    echo "Frontend changes detected: ${env.BUILD_FRONTEND}"
+                    echo "Backend changes detected: ${env.BUILD_BACKEND}"
+                }
+            }
+        }
+
+        stage('Build Frontend Docker Image') {
+            when {
+                expression { env.BUILD_FRONTEND == 'true' }
+            }
+            steps {
+                script {
                     dir(FRONTEND_DIR) {
                         sh 'docker build -t ${FRONTEND_IMAGE} .'
                     }
@@ -22,9 +41,11 @@ pipeline {
         }
 
         stage('Build Backend Docker Image') {
+            when {
+                expression { env.BUILD_BACKEND == 'true' }
+            }
             steps {
                 script {
-                    // Build Docker image for backend (Spring Boot)
                     dir(BACKEND_DIR) {
                         sh 'docker build -t ${BACKEND_IMAGE} .'
                     }
@@ -35,13 +56,20 @@ pipeline {
         stage('Push Images to Docker Hub') {
             steps {
                 script {
-                    // Log in to Docker Hub and push images
                     withCredentials([usernamePassword(credentialsId: DOCKER_CREDENTIALS_ID, usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
-                        sh '''
-                            echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
-                            docker push ${FRONTEND_IMAGE}
-                            docker push ${BACKEND_IMAGE}
-                        '''
+                        if (env.BUILD_FRONTEND == 'true') {
+                            sh '''
+                                echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
+                                docker push ${FRONTEND_IMAGE}
+                            '''
+                        }
+
+                        if (env.BUILD_BACKEND == 'true') {
+                            sh '''
+                                echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
+                                docker push ${BACKEND_IMAGE}
+                            '''
+                        }
                     }
                 }
             }
@@ -50,9 +78,27 @@ pipeline {
         stage('Deploy to Kubernetes') {
             steps {
                 script {
-                    // Apply Kubernetes deployment YAML files
-                    sh 'kubectl apply -f k8s/frontend-deployment.yaml'
-                    sh 'kubectl apply -f k8s/backend-deployment.yaml'
+                    if (env.BUILD_FRONTEND == 'true') {
+                        sh 'kubectl apply -f k8s/frontend-deployment.yaml'
+                    }
+
+                    if (env.BUILD_BACKEND == 'true') {
+                        sh 'kubectl apply -f k8s/backend-deployment.yaml'
+                    }
+                }
+            }
+        }
+
+        stage('Cleanup Docker Images') {
+            steps {
+                script {
+                    echo 'Cleaning up unused Docker images...'
+                    // Remove all Docker images related to the build
+                    sh '''
+                        docker rmi -f ${FRONTEND_IMAGE} || true
+                        docker rmi -f ${BACKEND_IMAGE} || true
+                        docker system prune -f --all || true
+                    '''
                 }
             }
         }
@@ -60,11 +106,14 @@ pipeline {
 
     post {
         success {
-            echo 'Deployment successful!'
+            echo 'Deployment successful! All images have been cleaned up.'
         }
 
         failure {
-            echo 'Deployment failed!'
+            echo 'Deployment failed! Cleaning up Docker images.'
+            script {
+                sh 'docker system prune -f --all || true'
+            }
         }
     }
 }
