@@ -13,7 +13,7 @@ pipeline {
         stage('Clone Repository') {
             steps {
                 // Clone your repository
-                git 'https://github.com/CdtaAq/Dev-ops-project.git'
+                git 'git@github.com:CdtaAq/Dev-ops-project.git'
             }
         }
 
