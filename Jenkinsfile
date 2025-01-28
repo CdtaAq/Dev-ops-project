@@ -6,7 +6,7 @@ pipeline {
         BACKEND_DIR = 'spring-backend'
         FRONTEND_IMAGE = 'ctay456aa/angular-frontend/frontend:latest'
         BACKEND_IMAGE = 'ctay456aa/angular-frontend/backend:latest'
-        DOCKER_CREDENTIALS_ID = 'docker-credentials'  // Replace with your Docker Hub credentials ID
+        DOCKER_CREDENTIALS_ID = 'docker-credentials'  
     }
 
     stages {
