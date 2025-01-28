@@ -10,13 +10,6 @@ pipeline {
     }
 
     stages {
-        stage('Clone Repository') {
-            steps {
-                // Clone your repository
-                git 'git@github.com:CdtaAq/Dev-ops-project.git'
-            }
-        }
-
         stage('Build Frontend Docker Image') {
             steps {
                 script {
