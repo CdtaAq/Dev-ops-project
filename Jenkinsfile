@@ -4,8 +4,8 @@ pipeline {
     environment {
         FRONTEND_DIR = 'angular-frontend'
         BACKEND_DIR = 'spring-backend'
-        FRONTEND_IMAGE = 'ctay456aa/angular-frontend/frontend:latest'
-        BACKEND_IMAGE = 'ctay456aa/angular-frontend/backend:latest'
+        FRONTEND_IMAGE = 'ctay456aa/angular-frontend:latest'
+        BACKEND_IMAGE = 'ctay456aa/angular-frontend:latest'
         DOCKER_CREDENTIALS_ID = 'docker-credentials'  
     }
 
