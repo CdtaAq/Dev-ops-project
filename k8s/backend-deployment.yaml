@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: backend
-          image: ctay456aa/spring-backend
+          image: ctay456aa/angular-backend:latest
           imagePullPolicy: Always
           ports:
             - containerPort: 8080
