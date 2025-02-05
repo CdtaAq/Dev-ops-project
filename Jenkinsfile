@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        FRONTEND_DIR = 'angular-frontend'
+        FRONTEND_DIR = 'angular-frontend' 
         BACKEND_DIR = 'spring-backend'
         FRONTEND_IMAGE = 'ctay456aa/angular-frontend:latest'
         BACKEND_IMAGE = 'ctay456aa/angular-frontend:latest'
