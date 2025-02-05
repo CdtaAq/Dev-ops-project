@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: frontend
-          image: ctay456aa/angular-frontend
+          image: ctay456aa/angular-frontend:latest
           imagePullPolicy: Always
           ports:
             - containerPort: 4200
