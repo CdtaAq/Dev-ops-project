@@ -1,11 +1,7 @@
 # Step 1: Build Stage
 # Use Maven to build the application
 FROM maven:3.8.3-openjdk-17 AS build
-
-# Set the working directory inside the container
 WORKDIR /app
-
-# Copy the pom.xml and install the dependencies (this helps caching)
 COPY pom.xml .
 
 # Download dependencies to cache them
